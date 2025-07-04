@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VibeTheme - Runtime Theme Switching Demo</title>
+  <style>
+    /* VibeTheme CSS Variables */
+    :root {
+      --background: 0 0% 100%;
+      --foreground: 222.2 84% 4.9%;
+      --primary: 221.2 83.2% 53.3%;
+      --primary-foreground: 210 40% 98%;
+      --secondary: 210 40% 96%;
+      --secondary-foreground: 222.2 84% 4.9%;
+      --muted: 210 40% 96%;
+      --muted-foreground: 215.4 16.3% 46.9%;
+      --accent: 210 40% 96%;
+      --accent-foreground: 222.2 84% 4.9%;
+      --destructive: 0 84.2% 60.2%;
+      --destructive-foreground: 210 40% 98%;
+      --border: 214.3 31.8% 91.4%;
+      --input: 214.3 31.8% 91.4%;
+      --ring: 221.2 83.2% 53.3%;
+      --card: 0 0% 100%;
+      --card-foreground: 222.2 84% 4.9%;
+      --popover: 0 0% 100%;
+      --popover-foreground: 222.2 84% 4.9%;
+    }
+
+    /* Base styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: hsl(var(--background));
+      color: hsl(var(--foreground));
+      line-height: 1.6;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .header h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header p {
+      font-size: 1.25rem;
+      color: hsl(var(--muted-foreground));
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Theme controls */
+    .theme-controls {
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .theme-controls h2 {
+      margin-bottom: 1.5rem;
+      color: hsl(var(--card-foreground));
+    }
+
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .theme-button {
+      background: hsl(var(--secondary));
+      color: hsl(var(--secondary-foreground));
+      border: 2px solid hsl(var(--border));
+      border-radius: 8px;
+      padding: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .theme-button:hover {
+      background: hsl(var(--accent));
+      color: hsl(var(--accent-foreground));
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px hsl(var(--shadow) / 0.15);
+    }
+
+    .theme-button.active {
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+      border-color: hsl(var(--primary));
+    }
+
+    .theme-button:focus {
+      outline: 2px solid hsl(var(--ring));
+      outline-offset: 2px;
+    }
+
+    /* AI Theme Generator */
+    .ai-generator {
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .prompt-input {
+      width: 100%;
+      padding: 1rem;
+      border: 1px solid hsl(var(--input));
+      border-radius: 8px;
+      background: hsl(var(--background));
+      color: hsl(var(--foreground));
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .prompt-input:focus {
+      outline: 2px solid hsl(var(--ring));
+      outline-offset: 2px;
+      border-color: hsl(var(--ring));
+    }
+
+    .generate-btn {
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .generate-btn:hover {
+      background: hsl(var(--primary) / 0.9);
+      transform: translateY(-1px);
+    }
+
+    .generate-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Feature showcase */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .feature-card {
+      background: hsl(var(--card));
+      border: 1px solid hsl(var(--border));
+      border-radius: 12px;
+      padding: 2rem;
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px hsl(var(--shadow) / 0.15);
+    }
+
+    .feature-card h3 {
+      margin-bottom: 1rem;
+      color: hsl(var(--card-foreground));
+      font-size: 1.25rem;
+    }
+
+    .feature-card p {
+      color: hsl(var(--muted-foreground));
+      margin-bottom: 1.5rem;
+    }
+
+    .feature-card .buttons {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      border: 1px solid;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      background: hsl(var(--primary));
+      color: hsl(var(--primary-foreground));
+      border-color: hsl(var(--primary));
+    }
+
+    .btn-secondary {
+      background: hsl(var(--secondary));
+      color: hsl(var(--secondary-foreground));
+      border-color: hsl(var(--border));
+    }
+
+    .btn-destructive {
+      background: hsl(var(--destructive));
+      color: hsl(var(--destructive-foreground));
+      border-color: hsl(var(--destructive));
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    /* Input showcase */
+    .input-showcase {
+      background: hsl(var(--muted));
+      border-radius: 12px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .input-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: hsl(var(--foreground));
+    }
+
+    .input-group input,
+    .input-group select,
+    .input-group textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid hsl(var(--input));
+      border-radius: 6px;
+      background: hsl(var(--background));
+      color: hsl(var(--foreground));
+      transition: border-color 0.2s ease;
+    }
+
+    .input-group input:focus,
+    .input-group select:focus,
+    .input-group textarea:focus {
+      outline: 2px solid hsl(var(--ring));
+      outline-offset: 2px;
+      border-color: hsl(var(--ring));
+    }
+
+    /* Code example */
+    .code-example {
+      background: hsl(var(--muted));
+      border: 1px solid hsl(var(--border));
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      overflow-x: auto;
+    }
+
+    .code-example pre {
+      color: hsl(var(--muted-foreground));
+      font-family: 'Fira Code', 'Monaco', 'Cascadia Code', monospace;
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+
+    /* Keyboard shortcuts help */
+    .shortcuts {
+      background: hsl(var(--accent));
+      color: hsl(var(--accent-foreground));
+      border-radius: 8px;
+      padding: 1rem;
+      margin-top: 2rem;
+      font-size: 0.875rem;
+    }
+
+    .shortcuts h4 {
+      margin-bottom: 0.5rem;
+    }
+
+    .shortcuts ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .shortcuts li {
+      margin-bottom: 0.25rem;
+    }
+
+    .shortcuts kbd {
+      background: hsl(var(--background));
+      color: hsl(var(--foreground));
+      padding: 0.125rem 0.25rem;
+      border-radius: 3px;
+      font-size: 0.75rem;
+      border: 1px solid hsl(var(--border));
+    }
+
+    /* Responsive design */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .features {
+        grid-template-columns: 1fr;
+      }
+
+      .theme-grid {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      }
+    }
+
+    /* High contrast mode support */
+    @media (prefers-contrast: high) {
+      .theme-button,
+      .feature-card,
+      .btn {
+        border-width: 2px;
+      }
+    }
+
+    /* Reduced motion support */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>VibeTheme</h1>
+      <p>A lightweight, vanilla JavaScript library for runtime theme switching with Tailwind CSS compatibility. 
+         Features predefined themes, custom theme building, and AI-generated themes.</p>
+    </header>
+
+    <section class="theme-controls" id="theme-controls">
+      <h2>🎨 Theme Switching</h2>
+      <div class="theme-grid">
+        <button class="theme-button active" data-theme="light">
+          ☀️ Light
+        </button>
+        <button class="theme-button" data-theme="dark">
+          🌙 Dark
+        </button>
+        <button class="theme-button" data-theme="sepia">
+          📜 Sepia
+        </button>
+        <button class="theme-button" data-theme="ocean">
+          🌊 Ocean
+        </button>
+        <button class="theme-button" data-theme="forest">
+          🌲 Forest
+        </button>
+        <button class="theme-button" data-theme="sunset">
+          🌅 Sunset
+        </button>
+        <button class="theme-button" data-theme="high-contrast">
+          ⚫ High Contrast
+        </button>
+      </div>
+      
+      <div class="shortcuts">
+        <h4>Keyboard Shortcuts:</h4>
+        <ul>
+          <li><kbd>Alt</kbd> + <kbd>→</kbd> / <kbd>↓</kbd> - Next theme</li>
+          <li><kbd>Alt</kbd> + <kbd>←</kbd> / <kbd>↑</kbd> - Previous theme</li>
+          <li><kbd>Alt</kbd> + <kbd>1-7</kbd> - Switch to theme by number</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="ai-generator">
+      <h2>🤖 AI Theme Generator</h2>
+      <p style="margin-bottom: 1rem; color: hsl(var(--muted-foreground));">
+        Generate custom themes using natural language prompts. Try phrases like "vibrant purple theme" or "minimal corporate blue theme".
+      </p>
+      <input 
+        type="text" 
+        class="prompt-input" 
+        id="theme-prompt" 
+        placeholder="Describe your ideal theme... (e.g., 'vibrant creative theme with orange primary')"
+        value="vibetheme dark theme with purple accents"
+      />
+      <button class="generate-btn" id="generate-theme">
+        ✨ Generate Theme
+      </button>
+      
+      <div class="code-example">
+        <pre><code>// Example usage
+const generator = new AIThemeGenerator({ vibeTheme });
+const theme = await generator.generateTheme("vibrant creative theme");
+vibeTheme.setTheme(theme.name);</code></pre>
+      </div>
+    </section>
+
+    <section class="features">
+      <div class="feature-card">
+        <h3>🎯 Predefined Themes</h3>
+        <p>Seven carefully crafted themes including light, dark, sepia, ocean, forest, sunset, and high-contrast modes with proper contrast ratios.</p>
+        <div class="buttons">
+          <button class="btn btn-primary">Primary Action</button>
+          <button class="btn btn-secondary">Secondary</button>
+          <button class="btn btn-destructive">Destructive</button>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <h3>🎨 Custom Theme Builder</h3>
+        <p>Interactive color picker interface for creating custom themes with real-time preview.</p>
+        <div class="buttons">
+          <button class="btn btn-primary" id="open-builder">Open Builder</button>
+          <button class="btn btn-secondary">Save Theme</button>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <h3>♿ Accessibility First</h3>
+        <p>Built-in support for screen readers, keyboard navigation, and high contrast modes.</p>
+        <div class="buttons">
+          <button class="btn btn-primary">Accessible</button>
+          <button class="btn btn-secondary">WCAG Compliant</button>
+        </div>
+      </div>
+
+      <div class="feature-card">
+        <h3>💾 Persistent Storage</h3>
+        <p>Automatically saves your theme preference and respects system color scheme.</p>
+        <div class="buttons">
+          <button class="btn btn-primary">Auto-Save</button>
+          <button class="btn btn-secondary" id="clear-storage">Clear Storage</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="input-showcase">
+      <h2>📝 Form Elements Showcase</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+        <div class="input-group">
+          <label for="sample-input">Text Input</label>
+          <input type="text" id="sample-input" placeholder="Enter some text...">
+        </div>
+        
+        <div class="input-group">
+          <label for="sample-select">Select Dropdown</label>
+          <select id="sample-select">
+            <option>Option 1</option>
+            <option>Option 2</option>
+            <option>Option 3</option>
+          </select>
+        </div>
+        
+        <div class="input-group">
+          <label for="sample-textarea">Textarea</label>
+          <textarea id="sample-textarea" rows="3" placeholder="Enter multiple lines..."></textarea>
+        </div>
+      </div>
+    </section>
+
+    <div id="custom-theme-builder"></div>
+
+    <section style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid hsl(var(--border));">
+      <h2>🚀 Getting Started</h2>
+      <div class="code-example">
+        <pre><code>// Quick setup
+import { createVibeTheme } from './src/index.js';
+
+const vibeTheme = createVibeTheme({
+  defaultTheme: 'light',
+  enableCustomBuilder: true,
+  customBuilderContainer: '#theme-builder',
+  enableAI: true,
+  enableAccessibility: true
+});
+
+// Switch themes
+vibeTheme.setTheme('dark');
+
+// Generate AI theme
+const theme = await vibeTheme.generateTheme("calm blue theme");
+
+// Get current theme
+console.log(vibeTheme.getTheme());</code></pre>
+      </div>
+    </section>
+  </div>
+
+  <script type="module">
+    // Import VibeTheme library (in real usage, this would be from npm or CDN)
+    import { 
+      VibeTheme, 
+      CustomThemeBuilder, 
+      AIThemeGenerator, 
+      VibeThemeAccessibility, 
+      defaultThemeConfig,
+      allThemes
+    } from './src/index.js';
+
+    // Initialize VibeTheme with predefined themes
+    const vibeTheme = new VibeTheme({
+      themes: allThemes,
+      defaultTheme: 'light',
+      themeConfig: defaultThemeConfig,
+      onThemeChange: (theme) => {
+        console.log('Theme changed to:', theme.name);
+        updateActiveButton();
+      }
+    });
+
+    // Initialize accessibility features
+    const accessibility = new VibeThemeAccessibility({
+      vibeTheme: vibeTheme
+    });
+
+    // Initialize AI theme generator
+    const aiGenerator = new AIThemeGenerator({
+      vibeTheme: vibeTheme,
+      onThemeGenerated: (theme) => {
+        console.log('AI generated theme:', theme.name);
+        addCustomThemeButton(theme);
+      }
+    });
+
+    // Theme switching functionality
+    const themeButtons = document.querySelectorAll('[data-theme]');
+    themeButtons.forEach(button => {
+      accessibility.makeThemeControlAccessible(button, button.dataset.theme);
+    });
+
+    function updateActiveButton() {
+      const currentTheme = vibeTheme.getTheme();
+      themeButtons.forEach(button => {
+        button.classList.toggle('active', button.dataset.theme === currentTheme);
+      });
+    }
+
+    // AI theme generation
+    document.getElementById('generate-theme').addEventListener('click', async () => {
+      const prompt = document.getElementById('theme-prompt').value;
+      const button = document.getElementById('generate-theme');
+      
+      if (!prompt.trim()) return;
+      
+      button.disabled = true;
+      button.textContent = '⏳ Generating...';
+      
+      try {
+        const theme = await aiGenerator.generateTheme(prompt);
+        accessibility.announceCustomMessage(`Generated theme: ${theme.name}`);
+        
+        // Clear the input
+        document.getElementById('theme-prompt').value = '';
+      } catch (error) {
+        console.error('Theme generation failed:', error);
+        accessibility.announceCustomMessage('Theme generation failed');
+      } finally {
+        button.disabled = false;
+        button.textContent = '✨ Generate Theme';
+      }
+    });
+
+    function addCustomThemeButton(theme) {
+      const themeGrid = document.querySelector('.theme-grid');
+      const button = document.createElement('button');
+      button.className = 'theme-button';
+      button.dataset.theme = theme.name;
+      button.textContent = `🎨 ${theme.name}`;
+      
+      accessibility.makeThemeControlAccessible(button, theme.name);
+      themeGrid.appendChild(button);
+    }
+
+    // Custom theme builder
+    let customBuilder;
+    document.getElementById('open-builder').addEventListener('click', () => {
+      const container = document.getElementById('custom-theme-builder');
+      
+      if (customBuilder) {
+        customBuilder.destroy();
+        customBuilder = null;
+        return;
+      }
+      
+      customBuilder = new CustomThemeBuilder({
+        container: container,
+        vibeTheme: vibeTheme,
+        onThemeUpdate: (theme) => {
+          console.log('Custom theme updated:', theme.name);
+        }
+      });
+    });
+
+    // Clear storage functionality
+    document.getElementById('clear-storage').addEventListener('click', () => {
+      vibeTheme.clearSavedTheme();
+      accessibility.announceCustomMessage('Theme storage cleared');
+    });
+
+    // Enter key support for AI prompt
+    document.getElementById('theme-prompt').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('generate-theme').click();
+      }
+    });
+
+    // Initialize with current theme
+    updateActiveButton();
+
+    // Add skip link for accessibility
+    accessibility.addSkipLink();
+
+    console.log('VibeTheme demo loaded!');
+    console.log('Keyboard shortcuts:', accessibility.getKeyboardShortcuts());
+  </script>
+</body>
+</html> 
